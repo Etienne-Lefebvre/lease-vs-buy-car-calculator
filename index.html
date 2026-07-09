@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Louer neuf ou acheter usagé — Calculatrice de coûts auto (Ontario)</title>
-<meta name="description" content="Comparez le coût réel à long terme de la location d'une auto neuve par rapport à l'achat d'une auto usagée en Ontario (Ottawa), en dollars canadiens.">
+<meta name="description" content="Comparez le coût réel à long terme de la location d'un char neuf par rapport à l'achat d'un char usagé en Ontario (Ottawa), en dollars canadiens.">
 <style>
   :root {
     --surface-1: #fcfcfb;
@@ -452,7 +452,7 @@
       marquee: "★★★ OUI, VOUS PRENEZ UNE DÉCISION FINANCIÈRE MAJEURE SUR UN SITE QUI CLIGNOTE ★★★ NOS MATHS SONT SOLIDES, NOTRE CSS EST DOUTEUX ★★★ CE SITE A L'AIR LOUCHE MAIS IL CITE SES SOURCES — L'EXACT CONTRAIRE D'UN VRAI VENDEUR DE CHARS ★★★ SI UN SITE EN COMIC SANS VOUS FAIT ÉCONOMISER 70 000 $, ÇA COMPTE PAREIL ★★★ LES RAYURES SONT DÉCORATIVES, LA TVH DE 13 % EST RÉELLE ★★★ FAITES CONFIANCE AU CALCUL, PAS À LA POLICE DE CARACTÈRES ★★★",
       burst: "DES ESTIS DE BONS PRIX !!!<br>",
       theme: "Thème",
-      subtitle: "Estimez le coût total à long terme de la location successive de véhicules neufs par rapport à l’achat (et au remplacement éventuel) d’un véhicule usagé. Les valeurs par défaut sont des moyennes ontariennes — chiffres d’Ottawa lorsque disponibles — en dollars canadiens. Chaque montant est modifiable : ajustez-le à votre situation.",
+      subtitle: "Estimez le coût total à long terme de la location successive de chars neufs par rapport à l’achat (et au remplacement éventuel) d’un char usagé. Les valeurs par défaut sont des moyennes ontariennes — chiffres d’Ottawa lorsque disponibles — en dollars canadiens. Chaque montant est modifiable : ajustez-le à votre situation.",
       horizon: "Pendant combien d’années avez-vous besoin d’un char?",
       yrs: " ans",
       kmYear: "Kilométrage annuel estimé (km)",
@@ -503,15 +503,15 @@
       langBtn: "EN",
       langAria: "Switch to English",
       srcSummary: "Hypothèses et sources de données (Ontario / Ottawa, en date de juillet 2026)",
-      srcHst: "<b>TVH :</b> la TVH de 13 % de l’Ontario s’applique aux paiements de location, aux frais de bail et au prix d’achat du véhicule (elle s’applique aussi aux ventes de véhicules usagés entre particuliers en Ontario).",
+      srcHst: "<b>TVH :</b> la TVH de 13 % de l’Ontario s’applique aux paiements de location, aux frais de bail et au prix d’achat du véhicule (elle s’applique aussi aux ventes de chars usagés entre particuliers en Ontario).",
       srcLease: "<b>Paiement de location (600 $/mois) :</b> le paiement de location moyen au Canada est d’environ 597 $/mois — " + LINKS.leasecosts + ". Louer plus longtemps qu’un seul bail signifie enchaîner des baux consécutifs; chaque renouvellement est retarifé selon l’inflation des véhicules neufs.",
-      srcUsed: "<b>Prix du véhicule usagé (36 700 $) :</b> prix affiché moyen des véhicules usagés, T1 2026 — indice des prix " + LINKS.autotrader + ". Lorsque le véhicule atteint la fin de sa durée de vie, le modèle le vend à sa valeur résiduelle et achète un véhicule usagé comparable à un prix ajusté pour l’inflation.",
-      srcIns: "<b>Assurance :</b> la prime moyenne à Ottawa est d’environ 1 850 $ à 2 100 $/an — " + LINKS.ratehub + ", " + LINKS.ratesdotca + ". Les véhicules loués exigent une couverture complète (collision + accessoire), d’où une valeur par défaut plus élevée; une auto usagée qui vous appartient peut être assurée plus légèrement.",
-      srcFuel: "<b>Essence :</b> calculée à partir de votre kilométrage annuel estimé, au prix moyen de l’essence en Ontario (1,85 $/L par défaut en 2026, modifiable) — " + LINKS.onfuel_fr + ". Consommation supposée : 8,5 L/100 km pour une auto neuve, 9,5 L/100 km pour une usagée plus âgée — " + LINKS.caa_calc_fr + ".",
+      srcUsed: "<b>Prix du véhicule usagé (36 700 $) :</b> prix affiché moyen des véhicules usagés, T1 2026 — indice des prix " + LINKS.autotrader + ". Lorsque le char atteint la fin de sa durée de vie, le modèle le vend à sa valeur résiduelle et achète un char usagé comparable à un prix ajusté pour l’inflation.",
+      srcIns: "<b>Assurance :</b> la prime moyenne à Ottawa est d’environ 1 850 $ à 2 100 $/an — " + LINKS.ratehub + ", " + LINKS.ratesdotca + ". Les chars loués exigent une couverture complète (collision + accessoire), d’où une valeur par défaut plus élevée; une auto usagée qui vous appartient peut être assurée plus légèrement.",
+      srcFuel: "<b>Essence :</b> calculée à partir de votre kilométrage annuel estimé, au prix moyen de l’essence en Ontario (1,85 $/L par défaut en 2026, modifiable) — " + LINKS.onfuel_fr + ". Consommation supposée : 8,5 L/100 km pour un char neuf, 9,5 L/100 km pour une usagée plus âgée — " + LINKS.caa_calc_fr + ".",
       srcAuto: "<b>Champs estimés automatiquement :</b> la durée de vie, l’assurance, l’entretien, la hausse de l’entretien et la dépréciation sont réestimés automatiquement chaque fois que vous modifiez le prix ou l’âge du véhicule usagé, selon des heuristiques simples calibrées sur les moyennes de la CAA et de l’industrie. Vous pouvez toujours les modifier vous-même — votre valeur est conservée jusqu’au prochain changement de prix ou d’âge.",
-      srcMaint: "<b>Entretien :</b> la CAA évalue l’entretien courant à environ 500 $ à 700 $/an; une auto neuve louée coûte moins cher sous garantie, tandis qu’une auto usagée vieillissante coûte davantage à mesure que les réparations s’accumulent — " + LINKS.caa_fr + ".",
+      srcMaint: "<b>Entretien :</b> la CAA évalue l’entretien courant à environ 500 $ à 700 $/an; un char neuf louée coûte moins cher sous garantie, tandis qu’un char usagé vieillissant coûte davantage à mesure que les réparations s’accumulent — " + LINKS.caa_fr + ".",
       srcDep: "<b>Dépréciation (12 %/an) :</b> appliquée chaque année à la valeur de l’auto usagée pour estimer sa valeur de revente; le « coût net de l’achat » soustrait la valeur nette que vous détenez (valeur de revente moins le solde du prêt), puisque vous possédez un actif que le locataire n’a pas.",
-      srcFair: "<b>Comparaison équitable :</b> louer une auto neuve et acheter une usagée sont des produits différents — la location comprend une garantie complète, les dispositifs de sécurité les plus récents et aucune surprise de réparation. Cet outil chiffre la différence; il ne prétend pas que les expériences sont identiques.",
+      srcFair: "<b>Comparaison équitable :</b> louer un char neuf et acheter une usagée sont des produits différents — la location comprend une garantie complète, les dispositifs de sécurité les plus récents et aucune surprise de réparation. Cet outil chiffre la différence; il ne prétend pas que les expériences sont identiques.",
       footnote: "Estimations seulement — ne constitue pas un conseil financier. Les valeurs par défaut reflètent les moyennes de l’Ontario et d’Ottawa en date de juillet 2026 et deviendront désuètes avec le temps; utilisez toujours vos propres soumissions. Les coûts d’utilisation sont maintenus constants en dollars d’aujourd’hui pour les deux options."
     }
   };
