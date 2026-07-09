@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Louer neuf ou acheter usagé — Calculatrice de coûts auto (Ontario)</title>
+<meta name="description" content="Comparez le coût réel à long terme de la location d'une auto neuve par rapport à l'achat d'une auto usagée en Ontario (Ottawa), en dollars canadiens.">
+<style>
+  :root {
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-lease: #2a78d6;
+    --series-buy: #1baf7a;
+    --good: #006300;
+    --input-bg: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #898781;
+      --grid: #2c2c2a;
+      --baseline: #383835;
+      --border: rgba(255,255,255,0.10);
+      --series-lease: #3987e5;
+      --series-buy: #199e70;
+      --good: #0ca30c;
+      --input-bg: #242423;
+    }
+  }
+  :root[data-theme="light"] {
+    --surface-1: #fcfcfb; --page: #f9f9f7; --text-primary: #0b0b0b;
+    --text-secondary: #52514e; --text-muted: #898781; --grid: #e1e0d9;
+    --baseline: #c3c2b7; --border: rgba(11,11,11,0.10);
+    --series-lease: #2a78d6; --series-buy: #1baf7a; --good: #006300;
+    --input-bg: #ffffff;
+  }
+  :root[data-theme="dark"] {
+    --surface-1: #1a1a19; --page: #0d0d0d; --text-primary: #ffffff;
+    --text-secondary: #c3c2b7; --text-muted: #898781; --grid: #2c2c2a;
+    --baseline: #383835; --border: rgba(255,255,255,0.10);
+    --series-lease: #3987e5; --series-buy: #199e70; --good: #0ca30c;
+    --input-bg: #242423;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page);
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 24px 20px 64px; }
+
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 6px; }
+  h1 { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.01em; }
+  .subtitle { color: var(--text-secondary); font-size: 0.95rem; margin: 4px 0 22px; max-width: 62ch; }
+  .header-actions { display: flex; gap: 8px; flex: none; }
+  .theme-btn {
+    border: 1px solid var(--border); background: var(--surface-1);
+    color: var(--text-secondary); border-radius: 8px; padding: 6px 12px;
+    font: inherit; font-size: 0.85rem; cursor: pointer;
+  }
+
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 0.8rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .key-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+  .key-dot.lease { background: var(--series-lease); }
+  .key-dot.buy { background: var(--series-buy); }
+
+  .horizon { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .horizon label { font-weight: 600; font-size: 0.95rem; }
+  .horizon input[type=range] { flex: 1 1 240px; accent-color: var(--series-lease); }
+  .horizon .years-out { font-size: 1.3rem; font-weight: 650; min-width: 5.2ch; text-align: right; }
+  .shared-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--grid); }
+  @media (max-width: 720px) { .shared-row { grid-template-columns: 1fr; } }
+  .auto-chip { font-style: normal; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); border: 1px solid var(--border); border-radius: 5px; padding: 0 4px; margin-left: 6px; vertical-align: 1px; }
+  .computed { font-size: 0.88rem; font-weight: 600; padding: 5px 8px; font-variant-numeric: tabular-nums; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+
+  .field { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 5px 0; }
+  .field label { font-size: 0.88rem; color: var(--text-secondary); }
+  .field input, .field select {
+    width: 110px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 7px;
+    background: var(--input-bg); color: var(--text-primary); font: inherit; font-size: 0.88rem;
+    text-align: right;
+  }
+  .field input:focus, .field select:focus { outline: 2px solid var(--series-lease); outline-offset: 1px; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; }
+  .tile .label { font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 7px; }
+  .tile .value { font-size: 1.55rem; font-weight: 650; margin-top: 2px; }
+  .tile .note { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .tile .value.savings { color: var(--good); }
+
+  .chart-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .legend { display: flex; gap: 18px; font-size: 0.85rem; color: var(--text-secondary); }
+  .legend span.item { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+  .legend i.lease { background: var(--series-lease); }
+  .legend i.buy { background: var(--series-buy); }
+  .table-btn { border: 1px solid var(--border); background: none; color: var(--text-secondary); border-radius: 8px; padding: 5px 11px; font: inherit; font-size: 0.82rem; cursor: pointer; }
+
+  #chartBox { position: relative; }
+  #chart { width: 100%; height: auto; display: block; }
+  #tooltip {
+    position: absolute; pointer-events: none; display: none;
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 9px;
+    padding: 8px 12px; font-size: 0.82rem; box-shadow: 0 4px 14px rgba(0,0,0,0.13);
+    min-width: 170px; z-index: 5;
+  }
+  #tooltip .tt-year { font-weight: 650; margin-bottom: 3px; }
+  #tooltip .tt-row { display: flex; justify-content: space-between; gap: 14px; color: var(--text-secondary); }
+  #tooltip .tt-row b { color: var(--text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  #dataTable { display: none; margin-top: 14px; overflow-x: auto; }
+  #dataTable table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+  #dataTable th, #dataTable td { padding: 6px 12px; text-align: right; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+  #dataTable th { color: var(--text-secondary); font-weight: 600; }
+  #dataTable th:first-child, #dataTable td:first-child { text-align: left; }
+
+  .assumptions { font-size: 0.85rem; color: var(--text-secondary); }
+  .assumptions summary { cursor: pointer; font-weight: 600; color: var(--text-primary); font-size: 0.92rem; }
+  .assumptions ul { margin: 10px 0 0 18px; display: grid; gap: 6px; }
+  .assumptions a { color: var(--series-lease); }
+  .footnote { font-size: 0.78rem; color: var(--text-muted); margin-top: 14px; }
+
+  /* ============ SKETCHY LOT MODE (Better Call Saul edition) ============ */
+  :root, :root[data-theme="light"] {
+    --page: #ffc300; --surface-1: #fff8e1; --text-primary: #2b1700;
+    --text-secondary: #5c3a00; --text-muted: #8a6a1a; --grid: #eadfb2;
+    --baseline: #c9a94e; --border: #d21f1f;
+    --series-lease: #2a78d6; --series-buy: #1baf7a; --good: #0a8a0a;
+    --input-bg: #fffdf0;
+    --accent: #d21f1f; --accent2: #ff5f1f; --loud: #fff700; --shadow: #7a0d0d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #07071a; --surface-1: #12122b; --text-primary: #fffef2;
+      --text-secondary: #e0d4ff; --text-muted: #9d8fc7; --grid: #26264a;
+      --baseline: #4a4a7a; --border: #ff2975;
+      --series-lease: #3987e5; --series-buy: #199e70; --good: #39ff14;
+      --input-bg: #1b1b38;
+      --accent: #ff2975; --accent2: #00e5ff; --loud: #fff700; --shadow: #000000;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page: #07071a; --surface-1: #12122b; --text-primary: #fffef2;
+    --text-secondary: #e0d4ff; --text-muted: #9d8fc7; --grid: #26264a;
+    --baseline: #4a4a7a; --border: #ff2975;
+    --series-lease: #3987e5; --series-buy: #199e70; --good: #39ff14;
+    --input-bg: #1b1b38;
+    --accent: #ff2975; --accent2: #00e5ff; --loud: #fff700; --shadow: #000000;
+  }
+
+  body {
+    font-family: "Comic Sans MS", "Trebuchet MS", cursive;
+    background-color: var(--page);
+    background-image: repeating-linear-gradient(-45deg, transparent 0 34px, rgba(0,0,0,0.14) 34px 68px);
+    background-attachment: fixed;
+  }
+  .marquee {
+    overflow: hidden; white-space: nowrap; background: var(--accent); color: var(--loud);
+    font-family: Impact, "Arial Black", sans-serif; text-transform: uppercase;
+    font-size: 1.05rem; letter-spacing: 0.07em; padding: 8px 0;
+    border-bottom: 4px solid var(--shadow);
+  }
+  .marquee span { display: inline-block; padding-left: 100%; animation: scrollby 44s linear infinite; }
+  @keyframes scrollby { to { transform: translateX(-100%); } }
+
+  h1 {
+    font-family: Impact, "Arial Black", sans-serif; text-transform: uppercase;
+    font-size: 2.2rem; line-height: 1.15; color: var(--accent);
+    text-shadow: 2px 2px 0 var(--loud), 5px 5px 0 var(--shadow);
+    transform: rotate(-1.2deg); letter-spacing: 0.02em;
+  }
+  .subtitle {
+    font-style: italic; font-weight: 700;
+    background: var(--surface-1); border: 2px dashed var(--accent);
+    padding: 10px 14px; box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+    transform: rotate(-0.3deg);
+  }
+  h1 { line-height: 1.3; }
+
+  .burst {
+    position: relative; width: 130px; height: 130px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    transform: rotate(9deg); animation: pulse 1.1s ease-in-out infinite;
+    filter: drop-shadow(4px 4px 0 var(--shadow));
+  }
+  .burst::before, .burst::after { content: ""; position: absolute; inset: 12%; background: var(--accent); }
+  .burst::after { transform: rotate(45deg); }
+  .burst span {
+    position: relative; z-index: 1; color: var(--loud); text-align: center;
+    font-family: Impact, "Arial Black", sans-serif; text-transform: uppercase;
+    font-size: 0.95rem; line-height: 1.1; transform: rotate(-9deg); padding: 0 18px;
+  }
+  @keyframes pulse { 50% { transform: rotate(9deg) scale(1.13); } }
+
+  .card { border: 3px dashed var(--accent); border-radius: 6px; box-shadow: 7px 7px 0 rgba(0,0,0,0.3); }
+  .cols .card:first-child { transform: rotate(-0.7deg); }
+  .cols .card:last-child { transform: rotate(0.5deg); }
+  .card h2 {
+    font-family: Impact, "Arial Black", sans-serif; font-size: 1rem; letter-spacing: 0.09em;
+    background: var(--accent); color: var(--loud); display: inline-flex; width: fit-content;
+    padding: 4px 12px; border: 2px solid var(--shadow); box-shadow: 3px 3px 0 var(--shadow);
+    transform: skew(-4deg);
+  }
+  .horizon label { text-transform: uppercase; }
+  .horizon .years-out { font-family: Impact, "Arial Black", sans-serif; color: var(--accent); font-size: 1.6rem; }
+
+  .field input, .field select { border: 2px solid var(--accent); border-radius: 4px; font-weight: 700; }
+  .auto-chip { background: var(--loud); color: #7a0d0d; border: 1px solid var(--shadow); font-weight: 700; }
+  .computed { color: var(--accent); }
+
+  .tile { border: 3px solid var(--accent); border-radius: 6px; box-shadow: 5px 5px 0 rgba(0,0,0,0.3); }
+  .tiles .tile:nth-child(1) { transform: rotate(-1deg); }
+  .tiles .tile:nth-child(2) { transform: rotate(0.8deg); }
+  .tiles .tile:nth-child(3) { transform: rotate(-0.5deg); border-style: dashed; }
+  .tile .label { text-transform: uppercase; font-weight: 700; }
+  .tile .value { font-family: Impact, "Arial Black", sans-serif; font-size: 2rem; letter-spacing: 0.02em; }
+  .tile .value.savings { animation: blink 0.9s steps(2, start) infinite; }
+  @keyframes blink { 50% { opacity: 0.15; } }
+
+  .theme-btn, .table-btn {
+    background: linear-gradient(var(--accent2), var(--accent)); color: var(--loud);
+    border: 2px solid var(--shadow); border-radius: 6px; box-shadow: 3px 3px 0 var(--shadow);
+    font-weight: 700; text-transform: uppercase; cursor: pointer;
+  }
+  .theme-btn:active, .table-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--shadow); }
+
+  #tooltip { border: 3px solid var(--accent); border-radius: 6px; }
+  .assumptions a { color: var(--accent); font-weight: 700; }
+  .assumptions summary { text-transform: uppercase; font-family: Impact, "Arial Black", sans-serif; letter-spacing: 0.04em; }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee span, .burst, .tile .value.savings { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="marquee"><span data-i18n="marquee">★★★ BEST DEALS IN TOWN ★★★</span></div>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 data-i18n="h1">Lease a new car vs. buy a used car</h1>
+    </div>
+    <div class="burst"><span data-i18n="burst">CRAZY DEALS!!!</span></div>
+    <div class="header-actions">
+      <button class="theme-btn" id="langBtn" aria-label="Passer au français">FR</button>
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle colour theme">◐ <span data-i18n="theme">Theme</span></button>
+    </div>
+  </header>
+  <p class="subtitle" data-i18n="subtitle">
+    Estimate the total long-term cost of repeatedly leasing new vehicles versus buying (and eventually replacing)
+    a used vehicle. Defaults are Ontario averages — Ottawa figures where available — in Canadian dollars.
+    Every number is editable, so adjust it to your situation.
+  </p>
+
+  <div class="card">
+    <div class="horizon">
+      <label for="years" data-i18n="horizon">How many years do you need a car?</label>
+      <input type="range" id="years" min="1" max="25" step="1" value="15">
+      <span class="years-out" id="yearsOut">15 yrs</span>
+    </div>
+    <div class="shared-row">
+      <div class="field"><label for="kmYear" data-i18n="kmYear">Estimated annual driving (km)</label><input type="number" id="kmYear" value="16000" min="0" step="1000"></div>
+      <div class="field"><label for="gasPrice" data-i18n="gasPrice">Gas price ($/L)</label><input type="number" id="gasPrice" value="1.85" min="0" step="0.05"></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2><span class="key-dot lease"></span><span data-i18n="leaseHead">Leasing new</span></h2>
+      <div class="field"><label for="leasePay" data-i18n="leasePay">Monthly lease payment (before HST)</label><input type="number" id="leasePay" value="600" min="0" step="25"></div>
+      <div class="field"><label for="leaseTerm" data-i18n="leaseTerm">Lease term (months)</label>
+        <select id="leaseTerm"><option>24</option><option>36</option><option selected>48</option><option>60</option></select></div>
+      <div class="field"><label for="leaseUpfront" data-i18n="leaseUpfront">Upfront per lease (down payment + fees)</label><input type="number" id="leaseUpfront" value="1500" min="0" step="250"></div>
+      <div class="field"><label for="leaseIns" data-i18n="leaseIns">Insurance ($/yr, full coverage)</label><input type="number" id="leaseIns" value="2100" min="0" step="50"></div>
+      <div class="field"><label data-i18n="leaseFuel">Fuel (estimated, $/yr)</label><span class="computed" id="leaseFuelOut">–</span></div>
+      <div class="field"><label for="leaseMaint" data-i18n="leaseMaint">Maintenance ($/yr)</label><input type="number" id="leaseMaint" value="450" min="0" step="50"></div>
+      <div class="field"><label for="newInfl" data-i18n="newInfl">New-vehicle price inflation (%/yr)</label><input type="number" id="newInfl" value="2" min="0" max="15" step="0.5"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="key-dot buy"></span><span data-i18n="buyHead">Buying used</span></h2>
+      <div class="field"><label for="buyPrice" data-i18n="buyPrice">Used vehicle price (before HST)</label><input type="number" id="buyPrice" value="36700" min="0" step="500"></div>
+      <div class="field"><label for="buyAge" data-i18n="buyAge">Vehicle age at purchase (years)</label><input type="number" id="buyAge" value="4" min="0" max="15" step="1"></div>
+      <div class="field"><label for="lifespan"><span data-i18n="lifespan">Vehicle lifespan (total years)</span><em class="auto-chip" data-i18n="autoChip">auto</em></label><input type="number" id="lifespan" value="18" min="6" max="30" step="1"></div>
+      <div class="field"><label for="loanRate" data-i18n="loanRate">Loan interest rate (%; 0 = pay cash)</label><input type="number" id="loanRate" value="6.99" min="0" max="30" step="0.25"></div>
+      <div class="field"><label for="loanTerm" data-i18n="loanTerm">Loan term (months)</label>
+        <select id="loanTerm"><option>36</option><option>48</option><option selected>60</option><option>72</option><option>84</option></select></div>
+      <div class="field"><label for="buyIns"><span data-i18n="buyIns">Insurance ($/yr)</span><em class="auto-chip" data-i18n="autoChip">auto</em></label><input type="number" id="buyIns" value="1750" min="0" step="50"></div>
+      <div class="field"><label data-i18n="buyFuel">Fuel (estimated, $/yr)</label><span class="computed" id="buyFuelOut">–</span></div>
+      <div class="field"><label for="buyMaint"><span data-i18n="buyMaint">Maintenance &amp; repairs ($/yr, at purchase)</span><em class="auto-chip" data-i18n="autoChip">auto</em></label><input type="number" id="buyMaint" value="1100" min="0" step="50"></div>
+      <div class="field"><label for="maintGrowth"><span data-i18n="maintGrowth">Maintenance growth as car ages (%/yr)</span><em class="auto-chip" data-i18n="autoChip">auto</em></label><input type="number" id="maintGrowth" value="5" min="0" max="20" step="0.5"></div>
+      <div class="field"><label for="depRate"><span data-i18n="depRate">Depreciation (% of value lost /yr)</span><em class="auto-chip" data-i18n="autoChip">auto</em></label><input type="number" id="depRate" value="12" min="0" max="40" step="1"></div>
+    </div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="label"><span class="key-dot lease"></span><span data-i18n="tileLeaseLabel">Total cost of leasing</span></div><div class="value" id="tileLease">–</div><div class="note" id="tileLeaseNote"></div></div>
+    <div class="tile"><div class="label"><span class="key-dot buy"></span><span data-i18n="tileBuyLabel">Net cost of buying used</span></div><div class="value" id="tileBuy">–</div><div class="note" id="tileBuyNote"></div></div>
+    <div class="tile"><div class="label"><span data-i18n="tileDiffLabel">Difference</span></div><div class="value savings" id="tileDiff">–</div><div class="note" id="tileDiffNote"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="chart-head">
+      <div class="legend">
+        <span class="item"><i class="lease"></i><span data-i18n="legendLease">Leasing new (cumulative)</span></span>
+        <span class="item"><i class="buy"></i><span data-i18n="legendBuy">Buying used (cumulative, net of resale value)</span></span>
+      </div>
+      <button class="table-btn" id="tableBtn">View data table</button>
+    </div>
+    <div id="chartBox">
+      <svg id="chart" role="img" aria-label="Cumulative cost of leasing versus buying over the selected number of years"></svg>
+      <div id="tooltip"></div>
+    </div>
+    <div id="dataTable"></div>
+  </div>
+
+  <div class="card assumptions">
+    <details>
+      <summary data-i18n="srcSummary">Assumptions &amp; data sources (Ontario / Ottawa, as of July 2026)</summary>
+      <ul>
+        <li data-i18n="srcHst"></li>
+        <li data-i18n="srcLease"></li>
+        <li data-i18n="srcUsed"></li>
+        <li data-i18n="srcIns"></li>
+        <li data-i18n="srcFuel"></li>
+        <li data-i18n="srcAuto"></li>
+        <li data-i18n="srcMaint"></li>
+        <li data-i18n="srcDep"></li>
+        <li data-i18n="srcFair"></li>
+      </ul>
+      <p class="footnote" data-i18n="footnote"></p>
+    </details>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var inputIds = ["years","kmYear","gasPrice","leasePay","leaseTerm","leaseUpfront","leaseIns","leaseMaint","newInfl",
+    "buyPrice","buyAge","lifespan","loanRate","loanTerm","buyIns","buyMaint","maintGrowth","depRate"];
+
+  var HST = 0.13;
+  var L100_NEW = 8.5, L100_USED = 9.5;   // assumed fuel consumption, L/100 km
+  var REF_PRICE = 36700;                  // average used price the heuristics are calibrated to
+
+  /* ---- i18n: English / français canadien ---- */
+  var LINKS = {
+    leasecosts: '<a href="https://www.leasecosts.ca/en/articles/how-much-canadians-pay-average-every-month-car-lease" target="_blank" rel="noopener">LeaseCosts Canada</a>',
+    autotrader: '<a href="https://www.autotrader.ca/editorial/price-index/" target="_blank" rel="noopener">AutoTrader</a>',
+    ratehub: '<a href="https://www.ratehub.ca/blog/how-much-is-car-insurance-in-ottawa/" target="_blank" rel="noopener">Ratehub</a>',
+    ratesdotca: '<a href="https://rates.ca/insurance-quotes/auto/ottawa" target="_blank" rel="noopener">RATESDOTCA</a>',
+    onfuel_en: '<a href="https://www.ontario.ca/motor-fuel-prices/" target="_blank" rel="noopener">Ontario motor fuel prices</a>',
+    onfuel_fr: '<a href="https://www.ontario.ca/motor-fuel-prices/" target="_blank" rel="noopener">Prix des carburants de l’Ontario</a>',
+    caa_calc_en: '<a href="https://carcosts.caa.ca/" target="_blank" rel="noopener">CAA Driving Costs Calculator</a>',
+    caa_calc_fr: '<a href="https://carcosts.caa.ca/" target="_blank" rel="noopener">Calculatrice des coûts d’utilisation d’un véhicule CAA</a>',
+    caa_en: '<a href="https://www.caa.ca/news/canadians-unclear-about-the-true-cost-of-owning-a-vehicle/" target="_blank" rel="noopener">CAA</a>',
+    caa_fr: '<a href="https://www.caa.ca/news/canadians-unclear-about-the-true-cost-of-owning-a-vehicle/" target="_blank" rel="noopener">CAA</a>'
+  };
+
+  var I18N = {
+    en: {
+      docTitle: "Lease New vs Buy Used — Ontario Car Cost Calculator",
+      h1: "Lease a new car vs. buy a used car",
+      marquee: "★★★ YES, YOU'RE MAKING A MAJOR FINANCIAL DECISION ON A WEBSITE THAT BLINKS ★★★ OUR MATH IS PEER-REVIEWED, OUR CSS IS NOT ★★★ THIS SITE LOOKS SHADY BUT CITES ITS SOURCES — THE EXACT OPPOSITE OF A REAL CAR SALESMAN ★★★ IF A COMIC SANS WEBSITE SAVES YOU $70,000, IT STILL COUNTS ★★★ THE STRIPES ARE DECORATIVE, THE 13% HST IS REAL ★★★ TRUST THE SPREADSHEET, NOT THE FONT ★★★",
+      burst: "CRAZY<br>DEALS!!!",
+      theme: "Theme",
+      subtitle: "Estimate the total long-term cost of repeatedly leasing new vehicles versus buying (and eventually replacing) a used vehicle. Defaults are Ontario averages — Ottawa figures where available — in Canadian dollars. Every number is editable, so adjust it to your situation.",
+      horizon: "How many years do you need a car?",
+      yrs: " yrs",
+      kmYear: "Estimated annual driving (km)",
+      gasPrice: "Gas price ($/L)",
+      autoChip: "auto",
+      leaseHead: "Leasing new",
+      leasePay: "Monthly lease payment (before HST)",
+      leaseTerm: "Lease term (months)",
+      leaseUpfront: "Upfront per lease (down payment + fees)",
+      leaseIns: "Insurance ($/yr, full coverage)",
+      leaseFuel: "Fuel (estimated, $/yr)",
+      leaseMaint: "Maintenance ($/yr)",
+      newInfl: "New-vehicle price inflation (%/yr)",
+      buyHead: "Buying used",
+      buyPrice: "Used vehicle price (before HST)",
+      buyAge: "Vehicle age at purchase (years)",
+      lifespan: "Vehicle lifespan (total years)",
+      loanRate: "Loan interest rate (%; 0 = pay cash)",
+      loanTerm: "Loan term (months)",
+      buyIns: "Insurance ($/yr)",
+      buyFuel: "Fuel (estimated, $/yr)",
+      buyMaint: "Maintenance & repairs ($/yr, at purchase)",
+      maintGrowth: "Maintenance growth as car ages (%/yr)",
+      depRate: "Depreciation (% of value lost /yr)",
+      tileLeaseLabel: "Total cost of leasing",
+      tileBuyLabel: "Net cost of buying used",
+      tileDiffLabel: "Difference",
+      leaseNote: function (n, yrs) { return n + " consecutive lease" + (n > 1 ? "s" : "") + " over " + yrs + " years"; },
+      buyNote: function (n) { return n + " used vehicle" + (n > 1 ? "s" : "") + ", after resale value"; },
+      diffBuy: function (yrs) { return "saved by buying used over " + yrs + " years"; },
+      diffLease: function (yrs) { return "saved by leasing over " + yrs + " years"; },
+      legendLease: "Leasing new (cumulative)",
+      legendBuy: "Buying used (cumulative, net of resale value)",
+      tableShow: "View data table",
+      tableHide: "Hide data table",
+      chartAria: "Cumulative cost of leasing versus buying over the selected number of years",
+      replaceCar: "replace car",
+      year0: "Year 0",
+      ttSigning: "At signing",
+      ttYear: function (y) { return "End of year " + y; },
+      ttLease: "Lease",
+      ttBuy: "Buy",
+      ttDiff: "Difference",
+      thYear: "Year",
+      thLease: "Leasing (cumulative)",
+      thBuy: "Buying (net cumulative)",
+      thSave: "Buying saves",
+      langBtn: "FR",
+      langAria: "Passer au français",
+      srcSummary: "Assumptions &amp; data sources (Ontario / Ottawa, as of July 2026)",
+      srcHst: "<b>HST:</b> Ontario’s 13% HST is applied to lease payments, lease fees, and vehicle purchase price (it also applies to private used-vehicle sales in Ontario).",
+      srcLease: "<b>Lease payment ($600/mo):</b> the Canadian average lease payment is roughly $597/month — " + LINKS.leasecosts + ". Leasing for longer than one term means signing consecutive leases; each renewal is repriced with new-vehicle inflation.",
+      srcUsed: "<b>Used vehicle price ($36,700):</b> average used-vehicle listing price, Q1 2026 — " + LINKS.autotrader + " Price Index. When the vehicle reaches the end of its lifespan, the model sells it at residual value and buys a comparable used vehicle at an inflation-adjusted price.",
+      srcIns: "<b>Insurance:</b> the average Ottawa premium is about $1,850–$2,100/yr — " + LINKS.ratehub + ", " + LINKS.ratesdotca + ". Leased vehicles require full (comprehensive + collision) coverage, so the lease default is higher; an owned used car can carry lighter coverage.",
+      srcFuel: "<b>Fuel:</b> computed from your estimated annual kilometres at the Ontario average gas price (default $1.85/L in 2026, editable) — " + LINKS.onfuel_en + ". Assumed consumption: 8.5 L/100 km for a new vehicle, 9.5 L/100 km for an older used one — " + LINKS.caa_calc_en + ".",
+      srcAuto: "<b>Auto-estimated fields:</b> vehicle lifespan, insurance, maintenance, maintenance growth, and depreciation are re-estimated automatically whenever you change the used vehicle’s price or age, using simple heuristics calibrated to CAA and industry averages. You can still type over any of them — your value holds until the next time you change the price or age.",
+      srcMaint: "<b>Maintenance:</b> CAA pegs routine maintenance at ~$500–$700/yr; leased new cars run below that under warranty, while an aging used car trends above it as repairs accumulate — " + LINKS.caa_en + ".",
+      srcDep: "<b>Depreciation (12%/yr):</b> applied to the used car’s value each year to estimate resale value; the “net cost of buying” subtracts the vehicle equity you hold (resale value minus any remaining loan balance), since you own an asset the leaser doesn’t.",
+      srcFair: "<b>Fair-comparison note:</b> leasing a new car and buying a used one are different products — the lease includes a full warranty, the newest safety features, and no repair surprises. This tool prices the difference; it doesn’t claim the experiences are identical.",
+      footnote: "Estimates only — not financial advice. Defaults reflect Ontario/Ottawa averages as of July 2026 and will drift over time; always plug in your own quotes. Operating costs are held flat in today’s dollars for both options."
+    },
+    fr: {
+      docTitle: "Louer neuf ou acheter usagé — Calculatrice de coûts auto (Ontario)",
+      h1: "Louer un char neuf ou acheter un char usagé",
+      marquee: "★★★ OUI, VOUS PRENEZ UNE DÉCISION FINANCIÈRE MAJEURE SUR UN SITE QUI CLIGNOTE ★★★ NOS MATHS SONT SOLIDES, NOTRE CSS EST DOUTEUX ★★★ CE SITE A L'AIR LOUCHE MAIS IL CITE SES SOURCES — L'EXACT CONTRAIRE D'UN VRAI VENDEUR DE CHARS ★★★ SI UN SITE EN COMIC SANS VOUS FAIT ÉCONOMISER 70 000 $, ÇA COMPTE PAREIL ★★★ LES RAYURES SONT DÉCORATIVES, LA TVH DE 13 % EST RÉELLE ★★★ FAITES CONFIANCE AU CALCUL, PAS À LA POLICE DE CARACTÈRES ★★★",
+      burst: "DES ESTIS DE BONS PRIX !!!<br>",
+      theme: "Thème",
+      subtitle: "Estimez le coût total à long terme de la location successive de véhicules neufs par rapport à l’achat (et au remplacement éventuel) d’un véhicule usagé. Les valeurs par défaut sont des moyennes ontariennes — chiffres d’Ottawa lorsque disponibles — en dollars canadiens. Chaque montant est modifiable : ajustez-le à votre situation.",
+      horizon: "Pendant combien d’années avez-vous besoin d’un char?",
+      yrs: " ans",
+      kmYear: "Kilométrage annuel estimé (km)",
+      gasPrice: "Prix du gaz ($/L)",
+      autoChip: "auto",
+      leaseHead: "Location neuve",
+      leasePay: "Paiement mensuel de location (avant TVH)",
+      leaseTerm: "Durée du bail (mois)",
+      leaseUpfront: "Frais initiaux par bail (comptant + frais)",
+      leaseIns: "Assurance ($/an, couverture complète)",
+      leaseFuel: "Essence (estimée, $/an)",
+      leaseMaint: "Entretien ($/an)",
+      newInfl: "Inflation du prix des véhicules neufs (%/an)",
+      buyHead: "Achat usagé",
+      buyPrice: "Prix du char usagé (avant TVH)",
+      buyAge: "Âge du char à l’achat (ans)",
+      lifespan: "Durée de vie du char (années totales)",
+      loanRate: "Taux d’intérêt du prêt (%; 0 = achat comptant)",
+      loanTerm: "Durée du prêt (mois)",
+      buyIns: "Assurance ($/an)",
+      buyFuel: "Essence (estimée, $/an)",
+      buyMaint: "Entretien et réparations ($/an, à l’achat)",
+      maintGrowth: "Hausse de l’entretien avec l’âge (%/an)",
+      depRate: "Dépréciation (% de valeur perdue/an)",
+      tileLeaseLabel: "Coût total de la location",
+      tileBuyLabel: "Coût net de l’achat usagé",
+      tileDiffLabel: "Différence",
+      leaseNote: function (n, yrs) { return n + (n > 1 ? " baux consécutifs" : " bail") + " sur " + yrs + " ans"; },
+      buyNote: function (n) { return n + (n > 1 ? " véhicules usagés" : " véhicule usagé") + ", après valeur de revente"; },
+      diffBuy: function (yrs) { return "économisé en achetant usagé sur " + yrs + " ans"; },
+      diffLease: function (yrs) { return "économisé en louant sur " + yrs + " ans"; },
+      legendLease: "Location neuve (cumulatif)",
+      legendBuy: "Achat usagé (cumulatif, net de la valeur de revente)",
+      tableShow: "Voir le tableau de données",
+      tableHide: "Masquer le tableau de données",
+      chartAria: "Coût cumulatif de la location par rapport à l’achat sur le nombre d’années choisi",
+      replaceCar: "remplacement",
+      year0: "Année 0",
+      ttSigning: "À la signature",
+      ttYear: function (y) { return "Fin de l’année " + y; },
+      ttLease: "Location",
+      ttBuy: "Achat",
+      ttDiff: "Différence",
+      thYear: "Année",
+      thLease: "Location (cumulatif)",
+      thBuy: "Achat (cumulatif net)",
+      thSave: "Économie en achetant",
+      langBtn: "EN",
+      langAria: "Switch to English",
+      srcSummary: "Hypothèses et sources de données (Ontario / Ottawa, en date de juillet 2026)",
+      srcHst: "<b>TVH :</b> la TVH de 13 % de l’Ontario s’applique aux paiements de location, aux frais de bail et au prix d’achat du véhicule (elle s’applique aussi aux ventes de véhicules usagés entre particuliers en Ontario).",
+      srcLease: "<b>Paiement de location (600 $/mois) :</b> le paiement de location moyen au Canada est d’environ 597 $/mois — " + LINKS.leasecosts + ". Louer plus longtemps qu’un seul bail signifie enchaîner des baux consécutifs; chaque renouvellement est retarifé selon l’inflation des véhicules neufs.",
+      srcUsed: "<b>Prix du véhicule usagé (36 700 $) :</b> prix affiché moyen des véhicules usagés, T1 2026 — indice des prix " + LINKS.autotrader + ". Lorsque le véhicule atteint la fin de sa durée de vie, le modèle le vend à sa valeur résiduelle et achète un véhicule usagé comparable à un prix ajusté pour l’inflation.",
+      srcIns: "<b>Assurance :</b> la prime moyenne à Ottawa est d’environ 1 850 $ à 2 100 $/an — " + LINKS.ratehub + ", " + LINKS.ratesdotca + ". Les véhicules loués exigent une couverture complète (collision + accessoire), d’où une valeur par défaut plus élevée; une auto usagée qui vous appartient peut être assurée plus légèrement.",
+      srcFuel: "<b>Essence :</b> calculée à partir de votre kilométrage annuel estimé, au prix moyen de l’essence en Ontario (1,85 $/L par défaut en 2026, modifiable) — " + LINKS.onfuel_fr + ". Consommation supposée : 8,5 L/100 km pour une auto neuve, 9,5 L/100 km pour une usagée plus âgée — " + LINKS.caa_calc_fr + ".",
+      srcAuto: "<b>Champs estimés automatiquement :</b> la durée de vie, l’assurance, l’entretien, la hausse de l’entretien et la dépréciation sont réestimés automatiquement chaque fois que vous modifiez le prix ou l’âge du véhicule usagé, selon des heuristiques simples calibrées sur les moyennes de la CAA et de l’industrie. Vous pouvez toujours les modifier vous-même — votre valeur est conservée jusqu’au prochain changement de prix ou d’âge.",
+      srcMaint: "<b>Entretien :</b> la CAA évalue l’entretien courant à environ 500 $ à 700 $/an; une auto neuve louée coûte moins cher sous garantie, tandis qu’une auto usagée vieillissante coûte davantage à mesure que les réparations s’accumulent — " + LINKS.caa_fr + ".",
+      srcDep: "<b>Dépréciation (12 %/an) :</b> appliquée chaque année à la valeur de l’auto usagée pour estimer sa valeur de revente; le « coût net de l’achat » soustrait la valeur nette que vous détenez (valeur de revente moins le solde du prêt), puisque vous possédez un actif que le locataire n’a pas.",
+      srcFair: "<b>Comparaison équitable :</b> louer une auto neuve et acheter une usagée sont des produits différents — la location comprend une garantie complète, les dispositifs de sécurité les plus récents et aucune surprise de réparation. Cet outil chiffre la différence; il ne prétend pas que les expériences sont identiques.",
+      footnote: "Estimations seulement — ne constitue pas un conseil financier. Les valeurs par défaut reflètent les moyennes de l’Ontario et d’Ottawa en date de juillet 2026 et deviendront désuètes avec le temps; utilisez toujours vos propres soumissions. Les coûts d’utilisation sont maintenus constants en dollars d’aujourd’hui pour les deux options."
+    }
+  };
+
+  var lang = "fr";
+  try {
+    lang = localStorage.getItem("lvb-lang") || "fr";
+  } catch (e) {}
+  var fmt;
+
+  function L(key) { return I18N[lang][key]; }
+
+  function applyLang() {
+    fmt = new Intl.NumberFormat(lang === "fr" ? "fr-CA" : "en-CA",
+      { style: "currency", currency: "CAD", maximumFractionDigits: 0 });
+    document.documentElement.lang = lang === "fr" ? "fr-CA" : "en-CA";
+    document.title = L("docTitle");
+    document.querySelectorAll("[data-i18n]").forEach(function (el) {
+      el.innerHTML = L(el.dataset.i18n);
+    });
+    $("langBtn").textContent = L("langBtn");
+    $("langBtn").setAttribute("aria-label", L("langAria"));
+    $("tableBtn").textContent = tableOpen ? L("tableHide") : L("tableShow");
+    svg.setAttribute("aria-label", L("chartAria"));
+  }
+
+  function num(id) { return parseFloat($(id).value) || 0; }
+
+  function fuelCosts() {
+    var km = num("kmYear"), gas = num("gasPrice");
+    return { lease: km / 100 * L100_NEW * gas, buy: km / 100 * L100_USED * gas };
+  }
+
+  /* ---- auto-estimated buy-side fields, driven by price + age ---- */
+  function roundTo(v, s) { return Math.round(v / s) * s; }
+  function deriveBuyFields() {
+    var p = num("buyPrice"), a = num("buyAge");
+    var pf = p / REF_PRICE; // 1.0 = average used vehicle
+    $("lifespan").value    = Math.min(25, Math.max(10, Math.round(14 + 5 * Math.min(pf, 1.4) - 0.25 * a)));
+    $("buyIns").value      = Math.max(800, roundTo(1400 + 0.012 * p - 20 * a, 50));
+    $("buyMaint").value    = Math.max(300, roundTo((600 + 125 * a) * (0.7 + 0.3 * Math.min(pf, 2)), 50));
+    $("maintGrowth").value = Math.min(8, Math.max(3, roundTo(4 + 0.25 * a, 0.5)));
+    $("depRate").value     = Math.min(18, Math.max(8, roundTo(16 - 1.2 * a, 0.5)));
+  }
+
+  /* ---- model: monthly simulation, sampled yearly ---- */
+  function simulate() {
+    var N = Math.max(1, Math.round(num("years")));
+    var months = N * 12;
+
+    // Lease: consecutive leases, repriced with new-vehicle inflation at each renewal
+    var leaseCum = [0];
+    var fuel = fuelCosts();
+    var pay = num("leasePay"), term = Math.max(12, num("leaseTerm")),
+        upfront = num("leaseUpfront"), infl = num("newInfl") / 100,
+        leaseOpMo = (num("leaseIns") + fuel.lease + num("leaseMaint")) / 12;
+    var cum = 0;
+    for (var m = 0; m < months; m++) {
+      var cycleStartYears = Math.floor(m / term) * term / 12;
+      var factor = Math.pow(1 + infl, cycleStartYears);
+      if (m % term === 0) cum += upfront * factor * (1 + HST);
+      cum += pay * factor * (1 + HST) + leaseOpMo;
+      if ((m + 1) % 12 === 0) leaseCum.push(cum);
+    }
+
+    // Buy: used car, financed or cash, replaced at end of lifespan; net of equity
+    var buyCum = [], buyEvents = [];
+    var price = num("buyPrice"), age = num("buyAge"), lifespan = num("lifespan"),
+        rate = num("loanRate") / 100 / 12, loanTerm = Math.max(1, num("loanTerm")),
+        buyOpMo = (num("buyIns") + fuel.buy) / 12,
+        maintBase = num("buyMaint"), maintG = num("maintGrowth") / 100,
+        dep = num("depRate") / 100;
+    var ownMonths = Math.max(12, Math.round((lifespan - age) * 12)); // months each car lasts
+
+    var out = 0, loanBal = 0, loanPay = 0, loanLeft = 0;
+    var carPrice = 0, ownedMo = 0;
+
+    function buyCar(atMonth) {
+      carPrice = price * Math.pow(1 + infl, atMonth / 12);
+      ownedMo = 0;
+      var total = carPrice * (1 + HST);
+      if (rate > 0) {
+        loanBal = total; loanLeft = loanTerm;
+        loanPay = total * rate / (1 - Math.pow(1 + rate, -loanTerm));
+      } else {
+        out += total; loanBal = 0; loanLeft = 0; loanPay = 0;
+      }
+      if (atMonth > 0) buyEvents.push(atMonth / 12);
+    }
+    function resale() {
+      return Math.max(1000, carPrice * Math.pow(1 - dep, ownedMo / 12));
+    }
+
+    buyCar(0);
+    buyCum.push(out - (resale() - loanBal)); // year 0: tax + fees minus instant equity
+    for (m = 0; m < months; m++) {
+      if (ownedMo >= ownMonths) {           // end of life: sell, pay off, replace
+        out -= resale();
+        out += loanBal; loanBal = 0; loanLeft = 0;
+        buyCar(m);
+      }
+      if (loanLeft > 0) {
+        var interest = loanBal * rate;
+        loanBal = Math.max(0, loanBal + interest - loanPay);
+        out += loanPay; loanLeft--;
+      }
+      out += buyOpMo + maintBase * Math.pow(1 + maintG, ownedMo / 12) / 12;
+      ownedMo++;
+      if ((m + 1) % 12 === 0) buyCum.push(out - (resale() - loanBal));
+    }
+
+    return { N: N, lease: leaseCum, buy: buyCum, buyEvents: buyEvents };
+  }
+
+  /* ---- summary tiles ---- */
+  function renderTiles(r) {
+    var L_ = r.lease[r.N], B = r.buy[r.N], d = L_ - B;
+    $("tileLease").textContent = fmt.format(L_);
+    $("tileLeaseNote").textContent = L("leaseNote")(Math.ceil(r.N * 12 / num("leaseTerm")), r.N);
+    $("tileBuy").textContent = fmt.format(B);
+    $("tileBuyNote").textContent = L("buyNote")(1 + r.buyEvents.length);
+    var diffTile = $("tileDiff");
+    if (d >= 0) {
+      diffTile.textContent = fmt.format(d);
+      $("tileDiffNote").textContent = L("diffBuy")(r.N);
+    } else {
+      diffTile.textContent = fmt.format(-d);
+      $("tileDiffNote").textContent = L("diffLease")(r.N);
+    }
+  }
+
+  /* ---- chart ---- */
+  var svg = $("chart"), box = $("chartBox"), tooltip = $("tooltip");
+  var PAD = { l: 64, r: 96, t: 16, b: 34 };
+  var cur = null, pts = null, W = 0, H = 0;
+
+  function niceStep(range, target) {
+    var raw = range / target, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10));
+    var norm = raw / mag;
+    var step = norm >= 5 ? 10 : norm >= 2 ? 5 : norm >= 1 ? 2 : 1;
+    return step * mag;
+  }
+  function shortMoney(v) {
+    var s;
+    if (v >= 1000) s = (v % 1000 === 0 ? String(v / 1000) : (v / 1000).toFixed(1)) + (lang === "fr" ? " k$" : "K");
+    else s = String(v) + (lang === "fr" ? " $" : "");
+    if (lang === "fr") return s.replace(".", ",");
+    return "$" + s;
+  }
+
+  function renderChart(r) {
+    cur = r;
+    W = Math.max(320, box.clientWidth);
+    H = Math.min(420, Math.max(280, W * 0.45));
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("height", H);
+
+    var maxV = Math.max(r.lease[r.N], r.buy[r.N]) * 1.06 || 1;
+    var minV = Math.min(0, r.buy[0]);
+    var step = niceStep(maxV - minV, 5);
+    var yTop = Math.ceil(maxV / step) * step;
+    var x = function (yr) { return PAD.l + (W - PAD.l - PAD.r) * yr / r.N; };
+    var y = function (v) { return PAD.t + (H - PAD.t - PAD.b) * (1 - (v - minV) / (yTop - minV)); };
+
+    var s = "";
+    // horizontal gridlines + y ticks
+    for (var v = 0; v <= yTop; v += step) {
+      s += '<line x1="' + PAD.l + '" x2="' + (W - PAD.r) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--grid)" stroke-width="1"/>';
+      s += '<text x="' + (PAD.l - 9) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="11" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">' + shortMoney(v) + "</text>";
+    }
+    // baseline + x ticks
+    s += '<line x1="' + PAD.l + '" x2="' + (W - PAD.r) + '" y1="' + y(0) + '" y2="' + y(0) + '" stroke="var(--baseline)" stroke-width="1"/>';
+    var xEvery = r.N > 16 ? 5 : r.N > 8 ? 2 : 1;
+    for (var yr = 0; yr <= r.N; yr++) {
+      if (yr % xEvery !== 0 && yr !== r.N) continue;
+      s += '<text x="' + x(yr) + '" y="' + (H - PAD.b + 20) + '" text-anchor="middle" font-size="11" fill="var(--text-muted)">' + (yr === 0 ? L("year0") : yr) + "</text>";
+    }
+    // replacement markers (buy side): lines always; labels only when they fit
+    if (r.buyEvents.length) {
+      var evXs = r.buyEvents.map(function (ev) { return x(ev); });
+      evXs.forEach(function (ex) {
+        s += '<line x1="' + ex + '" x2="' + ex + '" y1="' + PAD.t + '" y2="' + (H - PAD.b) + '" stroke="var(--grid)" stroke-width="1"/>';
+      });
+      var clampX = function (ex) { return Math.min(W - PAD.r - 34, Math.max(PAD.l + 34, ex)); };
+      var minGap = Infinity;
+      for (var g = 1; g < evXs.length; g++) minGap = Math.min(minGap, evXs[g] - evXs[g - 1]);
+      if (evXs.length === 1 || minGap > 80) {
+        evXs.forEach(function (ex) {
+          s += '<text x="' + clampX(ex) + '" y="' + (PAD.t + 10) + '" text-anchor="middle" font-size="10" fill="var(--text-muted)">' + L("replaceCar") + "</text>";
+        });
+      } else {
+        s += '<text x="' + clampX(evXs[0]) + '" y="' + (PAD.t + 10) + '" text-anchor="middle" font-size="10" fill="var(--text-muted)">' + L("replaceCar") + " ×" + evXs.length + "</text>";
+      }
+    }
+
+    function path(arr) {
+      var d = "";
+      for (var i = 0; i <= r.N; i++) d += (i ? "L" : "M") + x(i).toFixed(1) + " " + y(arr[i]).toFixed(1);
+      return d;
+    }
+    s += '<path d="' + path(r.lease) + '" fill="none" stroke="var(--series-lease)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    s += '<path d="' + path(r.buy) + '" fill="none" stroke="var(--series-buy)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+
+    // end markers: >=8px dot with 2px surface ring
+    [["lease", r.lease], ["buy", r.buy]].forEach(function (p) {
+      s += '<circle cx="' + x(r.N) + '" cy="' + y(p[1][r.N]) + '" r="6" fill="var(--series-' + p[0] + ')" stroke="var(--surface-1)" stroke-width="2"/>';
+    });
+    // direct end labels in text ink with a colored key dot (never colored text)
+    var lyRaw = [y(r.lease[r.N]), y(r.buy[r.N])];
+    var ly = lyRaw.slice();
+    if (Math.abs(ly[0] - ly[1]) < 16) { var mid = (ly[0] + ly[1]) / 2, o = ly[0] <= ly[1] ? -8 : 8; ly[0] = mid + o; ly[1] = mid - o; }
+    [[r.lease[r.N], "lease", 0], [r.buy[r.N], "buy", 1]].forEach(function (p) {
+      var yy = ly[p[2]];
+      if (Math.abs(yy - lyRaw[p[2]]) > 2)  // leader line when nudged apart
+        s += '<line x1="' + (x(r.N) + 7) + '" y1="' + lyRaw[p[2]] + '" x2="' + (x(r.N) + 12) + '" y2="' + yy + '" stroke="var(--baseline)" stroke-width="1"/>';
+      s += '<circle cx="' + (x(r.N) + 18) + '" cy="' + (yy - 4) + '" r="4" fill="var(--series-' + p[1] + ')"/>' +
+           '<text x="' + (x(r.N) + 26) + '" y="' + yy + '" font-size="11.5" font-weight="600" fill="var(--text-primary)">' + fmt.format(p[0]) + "</text>";
+    });
+
+    // crosshair (hidden until hover)
+    s += '<line id="xhair" x1="0" x2="0" y1="' + PAD.t + '" y2="' + (H - PAD.b) + '" stroke="var(--baseline)" stroke-width="1" visibility="hidden"/>' +
+         '<circle id="hd-lease" r="5" fill="var(--series-lease)" stroke="var(--surface-1)" stroke-width="2" visibility="hidden"/>' +
+         '<circle id="hd-buy" r="5" fill="var(--series-buy)" stroke="var(--surface-1)" stroke-width="2" visibility="hidden"/>';
+
+    svg.innerHTML = s;
+    pts = { x: x, y: y };
+  }
+
+  /* ---- hover: crosshair + tooltip ---- */
+  function onMove(evt) {
+    if (!cur || !pts) return;
+    var rect = svg.getBoundingClientRect();
+    var px = (evt.clientX - rect.left) * W / rect.width;
+    var yr = Math.round((px - PAD.l) / (W - PAD.l - PAD.r) * cur.N);
+    if (yr < 0 || yr > cur.N || px < PAD.l - 20 || px > W - PAD.r + 20) return onLeave();
+    var cx = pts.x(yr);
+    $("xhair").setAttribute("x1", cx); $("xhair").setAttribute("x2", cx);
+    $("xhair").setAttribute("visibility", "visible");
+    $("hd-lease").setAttribute("cx", cx); $("hd-lease").setAttribute("cy", pts.y(cur.lease[yr])); $("hd-lease").setAttribute("visibility", "visible");
+    $("hd-buy").setAttribute("cx", cx); $("hd-buy").setAttribute("cy", pts.y(cur.buy[yr])); $("hd-buy").setAttribute("visibility", "visible");
+    var d = cur.lease[yr] - cur.buy[yr];
+    tooltip.innerHTML = '<div class="tt-year">' + (yr === 0 ? L("ttSigning") : L("ttYear")(yr)) + "</div>" +
+      '<div class="tt-row"><span>' + L("ttLease") + "</span><b>" + fmt.format(cur.lease[yr]) + "</b></div>" +
+      '<div class="tt-row"><span>' + L("ttBuy") + "</span><b>" + fmt.format(cur.buy[yr]) + "</b></div>" +
+      '<div class="tt-row"><span>' + L("ttDiff") + "</span><b>" + fmt.format(Math.abs(d)) + "</b></div>";
+    tooltip.style.display = "block";
+    var bx = box.getBoundingClientRect();
+    var left = (cx * rect.width / W) + 14;
+    if (left + tooltip.offsetWidth > bx.width - 8) left = (cx * rect.width / W) - tooltip.offsetWidth - 14;
+    tooltip.style.left = left + "px";
+    tooltip.style.top = Math.max(4, evt.clientY - bx.top - tooltip.offsetHeight - 12) + "px";
+  }
+  function onLeave() {
+    ["xhair", "hd-lease", "hd-buy"].forEach(function (id) { var el = $(id); if (el) el.setAttribute("visibility", "hidden"); });
+    tooltip.style.display = "none";
+  }
+  svg.addEventListener("mousemove", onMove);
+  svg.addEventListener("mouseleave", onLeave);
+
+  /* ---- table view ---- */
+  var tableOpen = false;
+  function renderTable(r) {
+    if (!tableOpen || !r) { $("dataTable").style.display = "none"; return; }
+    var h = "<table><thead><tr><th>" + L("thYear") + "</th><th>" + L("thLease") + "</th><th>" + L("thBuy") + "</th><th>" + L("thSave") + "</th></tr></thead><tbody>";
+    for (var i = 0; i <= r.N; i++) {
+      h += "<tr><td>" + i + "</td><td>" + fmt.format(r.lease[i]) + "</td><td>" + fmt.format(r.buy[i]) + "</td><td>" + fmt.format(r.lease[i] - r.buy[i]) + "</td></tr>";
+    }
+    $("dataTable").innerHTML = h + "</tbody></table>";
+    $("dataTable").style.display = "block";
+  }
+  $("tableBtn").addEventListener("click", function () {
+    tableOpen = !tableOpen;
+    this.textContent = tableOpen ? L("tableHide") : L("tableShow");
+    renderTable(cur);
+  });
+
+  /* ---- theme toggle ---- */
+  $("themeBtn").addEventListener("click", function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    update();
+  });
+
+  /* ---- language toggle ---- */
+  $("langBtn").addEventListener("click", function () {
+    lang = lang === "en" ? "fr" : "en";
+    try { localStorage.setItem("lvb-lang", lang); } catch (e) {}
+    applyLang();
+    update();
+  });
+
+  /* ---- wire up ---- */
+  function update() {
+    $("yearsOut").textContent = num("years") + L("yrs");
+    var fuel = fuelCosts();
+    $("leaseFuelOut").textContent = fmt.format(fuel.lease);
+    $("buyFuelOut").textContent = fmt.format(fuel.buy);
+    var r = simulate();
+    renderTiles(r);
+    renderChart(r);
+    renderTable(r);
+  }
+  // re-derive BEFORE the generic update handler runs (registration order matters)
+  ["buyPrice", "buyAge"].forEach(function (id) { $(id).addEventListener("input", deriveBuyFields); });
+  inputIds.forEach(function (id) { $(id).addEventListener("input", update); });
+  window.addEventListener("resize", function () { if (cur) { renderChart(cur); } });
+  deriveBuyFields();
+  applyLang();
+  update();
+})();
+</script>
+</body>
+</html>
